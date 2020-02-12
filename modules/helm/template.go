@@ -108,6 +108,7 @@ func getHelm2Args(releaseName string, options *Options, t *testing.T, templateFi
 
 	// ... and add the chart at the end as the command expects
 	args = append(args, chartDir)
+	args = append(args, "--dry-run")
 
 	return args, nil
 }
@@ -118,6 +119,7 @@ func getHelm3Args(releaseName string, options *Options, t *testing.T, templateFi
 	var err error
 	args := []string{releaseName}
 	args = append(args, chartDir)
+	args = append(args, "--dry-run")
 	absChartDir, _ := filepath.Abs(chartDir)
 
 	for _, templateFile := range templateFiles {
