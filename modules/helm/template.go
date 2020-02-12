@@ -79,9 +79,20 @@ func RenderTemplateE(t *testing.T, options *Options, chartDir string, releaseNam
 func getHelm2Args(releaseName string, options *Options, t *testing.T, templateFiles []string, chartDir string) ([]string, error) {
 
 	var err error
-	args := []string{releaseName}
+	args := []string{}
+	args = append(args, "--name", releaseName)
+
 	args = append(args, chartDir)
 	absChartDir, _ := filepath.Abs(chartDir)
+
+	if options.KubectlOptions != nil && options.KubectlOptions.Namespace != "" {
+		args = append(args, "--namespace", options.KubectlOptions.Namespace)
+	}
+
+	args, err = getValuesArgsE(t, options, args...)
+	if err != nil {
+		return nil, err
+	}
 
 	for _, templateFile := range templateFiles {
 		// validate this is a valid template file
@@ -92,18 +103,14 @@ func getHelm2Args(releaseName string, options *Options, t *testing.T, templateFi
 
 		// Note: we only get the abs template file path to check it actually exists, but the `helm template` command
 		// expects the relative path from the chart.
-		args = append(args, "-s", templateFile)
-	}
-	if options.KubectlOptions != nil && options.KubectlOptions.Namespace != "" {
-		args = append(args, "--namespace", options.KubectlOptions.Namespace)
+		args = append(args, "-x", templateFile)
 	}
 
-	args, err = getValuesArgsE(t, options, args...)
-	if err != nil {
-		return nil, err
-	}
+	// ... and add the chart at the end as the command expects
+	args = append(args, chartDir)
+
 	return args, nil
-	}
+}
 
 // Helm 3 uses a different argument list it follows the syntax: helm template [NAME] [CHART] [flags]
 func getHelm3Args(releaseName string, options *Options, t *testing.T, templateFiles []string, chartDir string) ([]string, error) {
