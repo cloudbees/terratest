@@ -18,7 +18,7 @@ const HELM_V3 = 3
 const HELM_V2 = 2
 
 // Get the Helm version
-func getHelmVersion(t *testing.T) (int, error) {
+func GetHelmVersion(t *testing.T) (int, error) {
 
 	output, err := RunHelmCommandAndGetOutputE(t, nil, "version")
 	if err != nil {
@@ -37,8 +37,8 @@ func getHelmVersion(t *testing.T) (int, error) {
 // RenderTemplate runs `helm template` to render the template given the provided options and returns stdout/stderr from
 // the template command. If you pass in templateFiles, this will only render those templates. This function will fail
 // the test if there is an error rendering the template.
-func RenderTemplate(t *testing.T, options *Options, chartDir string, releaseName string, templateFiles []string) string {
-	out, err := RenderTemplateE(t, options, chartDir, releaseName, templateFiles)
+func RenderTemplate(t *testing.T, options *Options, chartDir string, releaseName string, templateFiles []string, helmVersion int) string {
+	out, err := RenderTemplateE(t, options, chartDir, releaseName, templateFiles, helmVersion )
 	require.NoError(t, err)
 	return out
 }
@@ -46,9 +46,8 @@ func RenderTemplate(t *testing.T, options *Options, chartDir string, releaseName
 // RenderTemplateE runs `helm template` to render the template given the provided options and returns stdout/stderr from
 // the template command. If you pass in templateFiles, this will only render those templates.
 // Updated to use the getHelmVersion to handle the changes in the arguments between Helm 2 and Helm 3
-func RenderTemplateE(t *testing.T, options *Options, chartDir string, releaseName string, templateFiles []string) (string, error) {
+func RenderTemplateE(t *testing.T, options *Options, chartDir string, releaseName string, templateFiles []string, helmVersion int) (string, error) {
 	var args []string
-	var helmVersion int
 
 	// First, verify the charts dir exists
 	_, err := filepath.Abs(chartDir)
@@ -57,11 +56,6 @@ func RenderTemplateE(t *testing.T, options *Options, chartDir string, releaseNam
 	}
 	if !files.FileExists(chartDir) {
 		return "", gwErrors.WithStackTrace(ChartNotFoundError{chartDir})
-	}
-
-	helmVersion, err = getHelmVersion(t)
-	if err != nil {
-		return "", gwErrors.WithStackTrace(err)
 	}
 
 	if helmVersion == HELM_V2 {

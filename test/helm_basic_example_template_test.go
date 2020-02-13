@@ -45,6 +45,7 @@ func TestHelmBasicExampleTemplateRenderedDeployment(t *testing.T) {
 	// Set up the namespace; confirm that the template renders the expected value for the namespace.
 	namespaceName := "medieval-" + strings.ToLower(random.UniqueId())
 	logger.Logf(t, "Namespace: %s\n", namespaceName)
+	helmVersion, err := helm.GetHelmVersion(t)
 
 	// Setup the args. For this test, we will set the following input values:
 	// - containerImageRepo=nginx
@@ -61,7 +62,7 @@ func TestHelmBasicExampleTemplateRenderedDeployment(t *testing.T) {
 	// we want to assert that the template renders without any errors.
 	// Additionally, although we know there is only one yaml file in the template, we deliberately path a templateFiles
 	// arg to demonstrate how to select individual templates to render.
-	output := helm.RenderTemplate(t, options, helmChartPath, releaseName, []string{"templates/deployment.yaml"})
+	output := helm.RenderTemplate(t, options, helmChartPath, releaseName, []string{"templates/deployment.yaml"},helmVersion,)
 
 	// Now we use kubernetes/client-go library to render the template output into the Deployment struct. This will
 	// ensure the Deployment resource is rendered correctly.
@@ -108,7 +109,7 @@ func TestHelmBasicExampleTemplateRequiredTemplateArgs(t *testing.T) {
 			map[string]string{"containerImageRepo": "nginx"},
 		},
 	}
-
+	helmVersion, _ := helm.GetHelmVersion(t)
 	// Now we iterate over each test case and spawn a sub test
 	for _, testCase := range testCases {
 		// Here, we capture the range variable and force it into the scope of this block. If we don't do this, when the
@@ -124,8 +125,9 @@ func TestHelmBasicExampleTemplateRequiredTemplateArgs(t *testing.T) {
 
 			// Now we try rendering the template, but verify we get an error
 			options := &helm.Options{SetValues: testCase.values}
-			_, err := helm.RenderTemplateE(t, options, helmChartPath, releaseName, []string{})
+			_, err := helm.RenderTemplateE(t, options, helmChartPath, releaseName, []string{}, helmVersion)
 			require.Error(t, err)
 		})
 	}
 }
+                                                                     
