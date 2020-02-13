@@ -20,7 +20,7 @@ const HELM_V2 = 2
 // Get the Helm version
 func GetHelmVersion(t *testing.T) (int, error) {
 
-	output, err := RunHelmCommandAndGetOutputE(t, nil, "version")
+	output, err := RunHelmCommandAndGetOutputE(t, nil, "version", "-c")
 	if err != nil {
 		return UNKNOWN_HELM_VERSION_ERR, gwErrors.WithStackTrace(err)
 	}
@@ -100,9 +100,10 @@ func getHelm2Args(releaseName string, options *Options, t *testing.T, templateFi
 		args = append(args, "-x", templateFile)
 	}
 
+	args = append(args, "--dry-run")
+
 	// ... and add the chart at the end as the command expects
 	args = append(args, chartDir)
-	args = append(args, "--dry-run")
 
 	return args, nil
 }
