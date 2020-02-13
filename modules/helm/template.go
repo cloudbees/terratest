@@ -38,7 +38,7 @@ func GetHelmVersion(t *testing.T) (int, error) {
 // the template command. If you pass in templateFiles, this will only render those templates. This function will fail
 // the test if there is an error rendering the template.
 func RenderTemplate(t *testing.T, options *Options, chartDir string, releaseName string, templateFiles []string, helmVersion int) string {
-	out, err := RenderTemplateE(t, options, chartDir, releaseName, templateFiles, helmVersion )
+	out, err := RenderTemplateE(t, options, chartDir, releaseName, templateFiles, helmVersion)
 	require.NoError(t, err)
 	return out
 }
@@ -100,8 +100,6 @@ func getHelm2Args(releaseName string, options *Options, t *testing.T, templateFi
 		args = append(args, "-x", templateFile)
 	}
 
-	args = append(args, "--dry-run")
-
 	// ... and add the chart at the end as the command expects
 	args = append(args, chartDir)
 
@@ -114,7 +112,6 @@ func getHelm3Args(releaseName string, options *Options, t *testing.T, templateFi
 	var err error
 	args := []string{releaseName}
 	args = append(args, chartDir)
-	args = append(args, "--dry-run")
 	absChartDir, _ := filepath.Abs(chartDir)
 
 	for _, templateFile := range templateFiles {
